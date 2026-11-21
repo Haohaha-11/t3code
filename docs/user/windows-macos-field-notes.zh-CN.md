@@ -23,6 +23,12 @@ Grok Build 在 Windows 上使用原生 CLI。在实际执行的 Windows 用户�
 
 如果无项目草稿的设备选择器无法选中 Windows，本机已登记的普通项目仍可作为入口。从该项目新建一条会话并核对环境标识，再选择本机 provider。参见[安装与 provider 文档](https://github.com/pingdotgg/t3code/blob/v0.1.11/docs/user/install.md#providers)。
 
+## Codex 多账号
+
+CC Switch 可以为各张 OpenAI Official 卡片绑定账号。启用卡片会切换本机 Codex 的生效配置。使用现有 CLI 登录的 T3 实例读取其 Codex home，新配置宜在新开的 T3 会话里验证。CC Switch 的本地账号列表不会作为独立 provider 自动出现在 T3 里。参见 [CC Switch 的 Codex 账号说明](https://github.com/farion1231/cc-switch/blob/main/README.md#how-do-i-switch-back-to-official-login)。
+
+如果希望每条会话都能在 T3 的模型选择器里指定账号，可以在 **Settings → Providers** 分别添加 ChatGPT 账号。也可以给第二个现有 CLI 实例设置相同的 `CODEX_HOME` 和独立的 `Shadow home path`，在后一个目录单独登录。兼容实例可继续同一条会话，每个实例各有登录。完全分开的 `CODEX_HOME` 用于独立的会话和配置。参见 [T3 Code 0.1.11 Codex 多账号文档](https://github.com/pingdotgg/t3code/blob/v0.1.11/docs/user/providers-codex.md#use-multiple-accounts)。
+
 ## 手机接入
 
 在 [T3 Code 官方安装说明](https://github.com/pingdotgg/t3code/blob/main/docs/user/install.md#mobile-app)打开 App Store 或 Google Play 的下载入口。在后端机器的 **Settings → Sharing & access** 检查可用路线。手机可通过 T3 Connect 或后端生成的配对链接添加环境。使用直接配对时，手机也需要能访问配对链接里的服务地址。
@@ -34,5 +40,9 @@ Grok Build 在 Windows 上使用原生 CLI。在实际执行的 Windows 用户�
 桌面客户端连接远端环境，解决的是人从哪个设备操作。跨设备分派还需要让 T3 **后端之间**建立 Linked environments。`0.1.11` 将其列为 Beta。两端分别在 **Settings → Labs** 启用，在发起端的 **Settings → Environments → Linked environments** 配对并选择访问范围。这条链接有方向，接收端能撤销。发起端后端还需要能到达接收端的服务地址。已有 Tailscale 和 SSH 可以提供网络路线，agent 权限仍由 T3 配对授予。参见[链接环境文档](https://github.com/pingdotgg/t3code/blob/v0.1.11/docs/user/remote-access.md#link-another-environment)。
 
 已获得 T3 编排 MCP 工具的 agent 可以通过 `delegate_task` 创建子会话并收回结果，用 `t3_thread_launch` 创建独立会话，也可以按权限给现有会话发消息、读结果或等待。工具会检查当前会话的权限和目标 provider。手工连接三台设备之后，仍需实际验证这些机器的 peer link 和权限。参见[编排 MCP 文档](https://github.com/pingdotgg/t3code/blob/v0.1.11/docs/orchestration-v2/orchestrator-mcp-server.md)。
+
+Windows 本机实测，Codex 使用 `delegate_task` 创建了一个 OpenCode 子会话，使用 `bailian/kimi-k3`，并等到了子会话的回复。另一个在模型目录中列出的模型返回了 `Model not exist`。测试委派时可以先选一个该环境已直接调用成功的模型。
+
+跨机测试使用临时 T3 环境和 SSH 隧道。Windows 成功链接 Mac B，并在该 Mac 的临时工作区创建了子会话。子会话的认证错误传回了 Windows 主会话，这次没有取得 Claude 的模型回复。Mac A 的 T3 管理策略关闭并锁定了 Linked environments，因此拒绝配对。在受管理环境里，如果 Labs 选项被锁定，需由管理员调整策略后才能尝试链接。
 
 可以用同一个小 Git 仓库来验证协作。三台机器各自 checkout，先确认使用同一提交。让主会话把一个只读检查交给已链接的环境，并要求报告提交哈希、一项发现和子会话结果。确认结果回到主会话以后，再尝试改代码的任务。多机修改时，用 commit 和独立分支交换变更，避免让多台服务器同时写同一个工作目录或会话数据库。T3 会把任务与结果转交给对方，未提交的文件改动仍留在原工作区。
